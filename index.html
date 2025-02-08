@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Калькулятор услуг склада - Шаг 1: Ввод данных товара</title>
+  <!-- Подключение основного файла стилей -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="index-bg">
+  <!-- Header: заголовок страницы и индикатор прогресса -->
+  <header>
+    <h1>Калькулятор услуг склада</h1>
+    <div class="progress-bar">
+      <!-- Активный шаг помечается классом "active" -->
+      <div class="step active">1</div>
+      <div class="step">2</div>
+      <div class="step">3</div>
+    </div>
+  </header>
+
+  <!-- Основной блок контента -->
+  <div class="content">
+    <h2>Шаг 1: Ввод данных товара</h2>
+    <form id="productForm">
+      <!-- Блок с основными данными: название, описание и количество -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="productName">Наименование товара:</label>
+          <input type="text" id="productName" required>
+        </div>
+        <div class="form-group">
+          <label for="productDescription">Описание товара:</label>
+          <input type="text" id="productDescription">
+        </div>
+        <div class="form-group">
+          <!-- Обратите внимание: введённое количество – в штуках -->
+          <label for="pieces">Количество товара (в штуках):</label>
+          <input type="number" id="pieces" min="1" required>
+        </div>
+      </div>
+      <!-- Блок для ввода URL товара -->
+      <div class="form-group">
+        <label for="productURL">Ссылка на товар:</label>
+        <input type="url" id="productURL" class="small-input">
+      </div>
+      <!-- Блок ввода параметров упаковки и размеров коробки -->
+      <div class="form-row-small">
+        <div class="form-group">
+          <label for="piecesPerPackage">Штук в упаковке:</label>
+          <input type="number" id="piecesPerPackage" class="small-input" min="1" required>
+        </div>
+        <div class="form-group">
+          <label for="boxWeight">Вес коробки (кг):</label>
+          <input type="number" id="boxWeight" class="small-input" min="0" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="boxLength">Длина коробки (см):</label>
+          <input type="number" id="boxLength" class="small-input" min="0" step="0.1" required>
+        </div>
+        <div class="form-group">
+          <label for="boxWidth">Ширина коробки (см):</label>
+          <input type="number" id="boxWidth" class="small-input" min="0" step="0.1" required>
+        </div>
+        <div class="form-group">
+          <label for="boxHeight">Высота коробки (см):</label>
+          <input type="number" id="boxHeight" class="small-input" min="0" step="0.1" required>
+        </div>
+      </div>
+      <!-- Блок загрузки изображения товара с предпросмотром -->
+      <div class="form-group">
+        <label for="productImage">Фотография товара:</label>
+        <input type="file" id="productImage" accept="image/*">
+        <div id="imagePreviewContainer">
+          <!-- Изображение для предпросмотра. Размер можно изменить в inline-стиле или в CSS -->
+          <img id="productImagePreview" src="" alt="Превью изображения" style="max-width:100px; display:none; margin-top:10px;">
+        </div>
+      </div>
+      <!-- Скрытое поле для хранения индекса товара (при редактировании) -->
+      <input type="hidden" id="editIndex" value="-1">
+      <!-- Кнопки управления: сохранить товар и перейти к выбору услуг -->
+      <div class="form-buttons">
+        <button type="button" onclick="addOrUpdateProduct()">Сохранить товар</button>
+        <button type="button" onclick="goToServices()">Перейти к выбору услуг</button>
+      </div>
+    </form>
+    <!-- Раздел отображения списка добавленных товаров -->
+    <div id="productsList">
+      <h3>Добавленные товары:</h3>
+      <ul id="productsUl"></ul>
+    </div>
+  </div>
+
+  <!-- Скриптовый блок: обработка данных, сохранение в sessionStorage, редактирование и удаление товара -->
+  <script>
+    // Получение товаров из sessionStorage
+    function getProducts() {
+      return JSON.parse(sessionStorage.getItem('productsData')) || [];
+    }
+    // Сохранение товаров в sessionStorage
+    function saveProducts(products) {
+      sessionStorage.setItem('productsData', JSON.stringify(products));
+    }
+    // Обновление списка товаров на странице
+    function updateProductsList() {
+      const products = getProducts();
+      const ul = document.getElementById('productsUl');
+      ul.innerHTML = '';
+      products.forEach((p, index) => {
+        // Добавляем "шт." для количества и упаковки
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${index + 1}. ${p.productName}</strong>${p.productDescription ? ' / ' + p.productDescription : ''}<br>
+                        Количество: ${p.pieces} шт., Упаковка: ${p.piecesPerPackage} шт.<br>
+                        <button onclick="editProduct(${index})">Редактировать</button>
+                        <button onclick="deleteProduct(${index})">Удалить</button>`;
+        ul.appendChild(li);
+      });
+    }
+    // Функция добавления нового товара или обновления существующего
+    function addOrUpdateProduct() {
+      const productName = document.getElementById('productName').value.trim();
+      const productDescription = document.getElementById('productDescription').value.trim();
+      const pieces = parseInt(document.getElementById('pieces').value);
+      const piecesPerPackage = parseInt(document.getElementById('piecesPerPackage').value);
+      const boxWeight = parseFloat(document.getElementById('boxWeight').value);
+      const boxLength = parseFloat(document.getElementById('boxLength').value);
+      const boxWidth = parseFloat(document.getElementById('boxWidth').value);
+      const boxHeight = parseFloat(document.getElementById('boxHeight').value);
+      const productURL = document.getElementById('productURL').value.trim();
+      const fileInput = document.getElementById('productImage');
+      const editIndex = parseInt(document.getElementById('editIndex').value);
+      
+      // Функция сохранения товара и сброса формы
+      function saveAndReset(imageData) {
+        const newProduct = {
+          productName,
+          productDescription,
+          productImageData: imageData,
+          pieces,
+          piecesPerPackage,
+          boxWeight,
+          boxLength,
+          boxWidth,
+          boxHeight,
+          productURL,
+          selectedServices: [] // На Шаге 2 сюда будут записаны выбранные услуги
+        };
+        let products = getProducts();
+        if (editIndex >= 0) {
+          // Редактирование товара
+          products[editIndex] = newProduct;
+          document.getElementById('editIndex').value = -1;
+        } else {
+          // Добавление нового товара
+          products.push(newProduct);
+        }
+        saveProducts(products);
+        updateProductsList();
+        document.getElementById('productForm').reset();
+        document.getElementById('productImagePreview').style.display = 'none';
+      }
+      
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          saveAndReset(e.target.result);
+        }
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        saveAndReset('');
+      }
+    }
+    // Функция редактирования товара: заполняем форму данными выбранного товара
+    function editProduct(index) {
+      const products = getProducts();
+      const product = products[index];
+      document.getElementById('productName').value = product.productName;
+      document.getElementById('productDescription').value = product.productDescription;
+      document.getElementById('pieces').value = product.pieces;
+      document.getElementById('piecesPerPackage').value = product.piecesPerPackage;
+      document.getElementById('boxWeight').value = product.boxWeight;
+      document.getElementById('boxLength').value = product.boxLength;
+      document.getElementById('boxWidth').value = product.boxWidth;
+      document.getElementById('boxHeight').value = product.boxHeight;
+      document.getElementById('productURL').value = product.productURL;
+      document.getElementById('editIndex').value = index;
+      if (product.productImageData) {
+        const imgPreview = document.getElementById('productImagePreview');
+        imgPreview.src = product.productImageData;
+        imgPreview.style.display = 'block';
+      }
+      window.scrollTo(0, 0);
+    }
+    // Функция удаления товара
+    function deleteProduct(index) {
+      if (confirm('Вы уверены, что хотите удалить этот товар?')) {
+        let products = getProducts();
+        products.splice(index, 1);
+        saveProducts(products);
+        updateProductsList();
+      }
+    }
+    // Переход к странице выбора услуг (Шаг 2)
+    function goToServices() {
+      const products = getProducts();
+      if (products.length === 0) {
+        alert('Пожалуйста, добавьте хотя бы один товар.');
+        return;
+      }
+      window.location.href = 'services.html';
+    }
+    // Обработчик изменения файла для предпросмотра изображения
+    document.getElementById('productImage').addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imgPreview = document.getElementById('productImagePreview');
+          imgPreview.src = e.target.result;
+          imgPreview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+    // При загрузке страницы обновляем список товаров
+    document.addEventListener('DOMContentLoaded', updateProductsList);
+  </script>
+
+  <!-- Нижний колонтитул (footer); см. стили в файле CSS -->
+  <footer>
+    <span class="footer-text">Gabit43<span class="footer-symbol">ⓒ</span></span>
+  </footer>
+</body>
+</html>
