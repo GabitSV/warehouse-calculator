@@ -2,18 +2,126 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Калькулятор услуг склада - Шаг 2: Выбор услуг</title>
+  <title>Калькулятор услуг склада - Шаг 2: Выбор услуг для каждого товара</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* Дополнительные стили для блока предварительного расчёта стоимости */
-    .cost-preview { 
-      font-weight: bold;      /* Жирный шрифт для стоимости */
-      margin-top: 10px;       /* Отступ сверху */
+    /* Стили для блока с услугами для каждого товара */
+    .product-services {
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      max-width: 600px;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .product-info h3 {
+      margin: 0 0 10px;
+    }
+    .service-selection {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+    .service-selection select {
+      flex: 1;
+      padding: 5px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .selected-services {
+      margin-top: 10px;
+      padding: 5px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 4px;
+      text-align: center;
+    }
+    /* Нумерованный список выбранных услуг */
+    .selected-services ol {
+      font-size: 0.8em;
+      margin: 0 auto;
+      padding: 0;
+      text-align: center;
+      list-style: none;
+      width: 100%;
+    }
+    .selected-services li {
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    /* Колонка с текстом услуги (растягивается) */
+    .name-col {
+      flex: 1;
+      text-align: left;
+    }
+    /* Фиксированные колонки для кнопок */
+    .btn-col {
+      width: 30px;
+      text-align: center;
+    }
+    /* Кнопка удаления – красный крестик */
+    .remove-btn {
+      color: red;
+      font-size: 1em;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    /* Кнопка подсказки – зеленый знак вопроса, жирный, без фона */
+    .help-btn {
+      color: green;
+      font-weight: bold;
+      font-size: 1em;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    /* Тултип, который появляется непосредственно над кнопкой help-btn.
+       Ширина равна 40ch, а текст обрезается после 3 строк с многоточием. */
+    .tooltiptext {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 5px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60ch;
+      background-color: #3CB371;
+      color: #fff;
+      text-align: center;
+      border-radius: 4px;
+      padding: 5px;
+      font-size: 0.8em;
+      z-index: 1;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      overflow: hidden;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      display: -webkit-box; /* По умолчанию скрываем, будем переключать через JS */
+    }
+    /* Скрывать тултип по умолчанию */
+    .tooltiptext.hidden {
+      display: none;
+    }
+    /* Hover-эффект для кнопок */
+    .remove-btn:hover,
+    .help-btn:hover {
+      outline: none;
+      box-shadow: 0 0 3px 1px rgba(0,128,0,0.5);
     }
   </style>
 </head>
 <body class="services-bg">
-  <!-- Header: заголовок и индикатор прогресса -->
   <header>
     <h1>Калькулятор услуг склада</h1>
     <div class="progress-bar">
@@ -22,62 +130,59 @@
       <div class="step">3</div>
     </div>
   </header>
-
-  <!-- Основной блок страницы -->
   <div class="content">
     <h2>Шаг 2: Выбор услуг для каждого товара</h2>
     <form id="servicesForm">
-      <!-- Контейнер для динамического создания блоков услуг -->
-      <div id="servicesContainer"></div>
+      <div id="servicesContainer">
+        <!-- Здесь будут создаваться блоки для каждого товара -->
+      </div>
       <div class="form-buttons">
         <button type="submit">Перейти к расчёту</button>
       </div>
     </form>
   </div>
-
   <script>
-    /* Массив услуг склада. Для изменения тарифов, единиц измерения и описаний, измените данные в этом массиве. */
+    // Массив услуг – чтобы изменить описание услуги, отредактируйте значение свойства description.
     const services = [
-      { name: "Погрузо-разгрузочные работы", unit: "Короб", rates: [6.70, 5.70, 4.70], description: "Работы по погрузке и разгрузке." },
-      { name: "Пересчет BOX", unit: "Короб", rates: [2.10, 2.00, 1.80], description: "Пересчет количества коробок." },
-      { name: "Пересчет PCS", unit: "Штука", rates: [0.60, 0.40, 0.20], description: "Пересчет единиц товара." },
-      { name: "Идентификация", unit: "Строка", rates: [20.00, 20.00, 20.00], description: "Идентификация товара." },
-      { name: "Видео подтверждение товара", unit: "Строка", rates: [47.97, 47.97, 47.97], description: "Видео подтверждение товара." },
-      { name: "Проверка целостности упаковки", unit: "Штука", rates: [0.69, 0.59, 0.49], description: "Проверка целостности упаковки." },
-      { name: "Проверка внешней поверхности изделия", unit: "Штука", rates: [0.69, 0.59, 0.46], description: "Проверка внешней поверхности изделия." },
-      { name: "Проверка внутренней поверхности изделия", unit: "Штука", rates: [0.69, 0.59, 0.46], description: "Проверка внутренней поверхности изделия." },
-      { name: "Проверка комплектации", unit: "Штука", rates: [0.67, 0.57, 0.47], description: "Проверка комплектации." },
-      { name: "Проверка на отсутствие резкого запаха", unit: "Штука", rates: [1.10, 1.10, 1.10], description: "Проверка на отсутствие резкого запаха." },
-      { name: "Обрезка ниток", unit: "Штука", rates: [1.50, 1.50, 1.50], description: "Обрезка ниток." },
-      { name: "Проверка карманов", unit: "Штука", rates: [1.50, 1.50, 1.50], description: "Проверка карманов." },
-      { name: "Проверка швов", unit: "Штука", rates: [1.50, 1.50, 1.50], description: "Проверка швов." },
-      { name: "Устранение баркодов", unit: "Штука", rates: [0.70, 0.70, 0.70], description: "Устранение баркодов." },
-      { name: "Проверка при подключении к источнику питания", unit: "Штука", rates: [2.57, 2.27, 1.97], description: "Проверка при подключении к источнику питания." },
-      { name: "Проверка элементов управления", unit: "Штука", rates: [2.57, 2.27, 1.97], description: "Проверка элементов управления." },
-      { name: "Проверка работы комплекта", unit: "Штука", rates: [2.57, 2.27, 1.97], description: "Проверка работы комплекта." },
-      { name: "Проверка проводных звуковых устройств", unit: "Штука", rates: [2.97, 2.97, 2.97], description: "Проверка проводных звуковых устройств." },
-      { name: "Проверка беспроводных звуковых устройств", unit: "Штука", rates: [2.97, 2.97, 2.97], description: "Проверка беспроводных звуковых устройств." },
-      { name: "Проверка внешних накопителей", unit: "Штука", rates: [2.97, 2.97, 2.97], description: "Проверка внешних накопителей." },
-      { name: "Проклейка баркодов", unit: "Штука", rates: [0.85, 0.75, 0.65], description: "Проклейка баркодов." },
-      { name: "Создание набора: Типография", unit: "Штука", rates: [0.87, 0.83, 0.79], description: "Создание набора: Типография." },
-      { name: "Создание набора: Товар", unit: "Штука", rates: [1.57, 1.47, 1.37], description: "Создание набора: Товар." },
-      { name: "Упаковка в пакеты клиента", unit: "Штука", rates: [0.55, 0.50, 0.45], description: "Упаковка в пакеты клиента." },
-      { name: "Проверка фурнитуры и декоративных элементов", unit: "Штука", rates: [2.97, 2.97, 2.97], description: "Проверка фурнитуры и декоративных элементов." },
-      { name: "Распечатка баркодов", unit: "Штука", rates: [0.11, 0.11, 0.11], description: "Распечатка баркодов." },
-      { name: "Хранение", unit: "Куб", rates: [7.77, 7.77, 7.77], description: "Услуги по хранению." },
-      { name: "Тест экрана", unit: "Штука", rates: [2.97, 2.97, 2.97], description: "Тест экрана." },
-      { name: "Проверка по ТЗ", unit: "Штука", rates: [5.00, 5.00, 5.00], description: "Проверка по ТЗ." }
+      { name: "Погрузо-разгрузочные работы", unit: "Короб", rates: [6.70, 5.70, 4.70], description: "Это услуга, при которой профессиональные грузчики осуществляют исключительно погрузку и выгрузку вашего груза с автомобиля." },
+      { name: "Пересчет BOX", unit: "Короб", rates: [2.10, 2.00, 1.80], description: "Добавить описание" },
+      { name: "Пересчет PCS", unit: "Штука", rates: [0.60, 0.40, 0.20], description: "Добавить описание" },
+      { name: "Идентификация", unit: "Строка", rates: [20.00, 20.00, 20.00], description: "Добавить описание" },
+      { name: "Видео подтверждение товара", unit: "Строка", rates: [47.97, 47.97, 47.97], description: "Добавить описание" },
+      { name: "Проверка целостности упаковки", unit: "Штука", rates: [0.69, 0.59, 0.49], description: "Добавить описание" },
+      { name: "Проверка внешней поверхности изделия", unit: "Штука", rates: [0.69, 0.59, 0.46], description: "Добавить описание" },
+      { name: "Проверка внутренней поверхности изделия", unit: "Штука", rates: [0.69, 0.59, 0.46], description: "Добавить описание" },
+      { name: "Проверка комплектации", unit: "Штука", rates: [0.67, 0.57, 0.47], description: "Добавить описание" },
+      { name: "Проверка на отсутствие резкого запаха", unit: "Штука", rates: [1.10, 1.10, 1.10], description: "Добавить описание" },
+      { name: "Обрезка ниток", unit: "Штука", rates: [1.50, 1.50, 1.50], description: "Добавить описание" },
+      { name: "Проверка карманов", unit: "Штука", rates: [1.50, 1.50, 1.50], description: "Добавить описание" },
+      { name: "Проверка швов", unit: "Штука", rates: [1.50, 1.50, 1.50], description: "Добавить описание" },
+      { name: "Устранение баркодов", unit: "Штука", rates: [0.70, 0.70, 0.70], description: "Добавить описание" },
+      { name: "Проверка при подключении к источнику питания", unit: "Штука", rates: [2.57, 2.27, 1.97], description: "Добавить описание" },
+      { name: "Проверка элементов управления", unit: "Штука", rates: [2.57, 2.27, 1.97], description: "Добавить описание" },
+      { name: "Проверка работы комплекта", unit: "Штука", rates: [2.57, 2.27, 1.97], description: "Добавить описание" },
+      { name: "Проверка проводных звуковых устройств", unit: "Штука", rates: [2.97, 2.97, 2.97], description: "Добавить описание" },
+      { name: "Проверка беспроводных звуковых устройств", unit: "Штука", rates: [2.97, 2.97, 2.97], description: "Добавить описание" },
+      { name: "Проверка внешних накопителей", unit: "Штука", rates: [2.97, 2.97, 2.97], description: "Добавить описание" },
+      { name: "Проклейка баркодов", unit: "Штука", rates: [0.85, 0.75, 0.65], description: "Добавить описание" },
+      { name: "Создание набора: Типография", unit: "Штука", rates: [0.87, 0.83, 0.79], description: "Добавить описание" },
+      { name: "Создание набора: Товар", unit: "Штука", rates: [1.57, 1.47, 1.37], description: "Добавить описание" },
+      { name: "Упаковка в пакеты клиента", unit: "Штука", rates: [0.55, 0.50, 0.45], description: "Добавить описание" },
+      { name: "Проверка фурнитуры и декоративных элементов", unit: "Штука", rates: [2.97, 2.97, 2.97], description: "Добавить описание" },
+      { name: "Распечатка баркодов", unit: "Штука", rates: [0.11, 0.11, 0.11], description: "Добавить описание" },
+      { name: "Хранение", unit: "Куб", rates: [7.77, 7.77, 7.77], description: "Добавить описание" },
+      { name: "Тест экрана", unit: "Штука", rates: [2.97, 2.97, 2.97], description: "Добавить описание" },
+      { name: "Проверка по ТЗ", unit: "Штука", rates: [5.00, 5.00, 5.00], description: "Добавить описание" }
     ];
     
-    // Получаем товары из sessionStorage
     function getProducts() {
       return JSON.parse(sessionStorage.getItem('productsData')) || [];
     }
-    // Сохраняем товары в sessionStorage
     function saveProducts(products) {
       sessionStorage.setItem('productsData', JSON.stringify(products));
     }
-    // Функция динамического создания блоков для выбора услуг по каждому товару
+    
+    // Создание блоков для выбора услуг для каждого товара
     function createServiceBlocks() {
       const products = getProducts();
       const container = document.getElementById('servicesContainer');
@@ -87,113 +192,146 @@
         return;
       }
       products.forEach((product, pIndex) => {
-        // Блок информации о товаре
+        if (!product.selectedServices) product.selectedServices = [];
         let block = document.createElement('div');
         block.className = 'product-services';
         block.innerHTML = `<div class="product-info">
                              <h3>${pIndex + 1}. ${product.productName}${product.productDescription ? ' / ' + product.productDescription : ''}</h3>
-                             <!-- Выводим количество с "шт." -->
                              <p>Количество: ${product.pieces} шт., Упаковка: ${product.piecesPerPackage} шт.</p>
+                           </div>
+                           <div class="service-selection">
+                             <select id="select_p${pIndex}">
+                               <option value="">-- Выберите услугу --</option>
+                             </select>
+                             <button type="button" onclick="addService(${pIndex})">Добавить услугу</button>
+                           </div>
+                           <div class="selected-services" id="selectedServices_p${pIndex}">
+                             <p>Выбранные услуги:</p>
+                             <div id="servicesList_p${pIndex}">Нет</div>
                            </div>`;
-        // Таблица со списком услуг
-        let table = document.createElement('table');
-        table.innerHTML = `<thead>
-                             <tr>
-                               <th>Выбрать</th>
-                               <th>Услуга</th>
-                               <th>Ед. изм.</th>
-                               <th>Тарифы (до 1500 / 1501-5000 / от 5001)</th>
-                             </tr>
-                           </thead>`;
-        let tbody = document.createElement('tbody');
-        // Проходим по массиву услуг и создаём строки таблицы
-        services.forEach((service, sIndex) => {
-          let tr = document.createElement('tr');
-          tr.innerHTML = `<td><input type="checkbox" id="p${pIndex}_s${sIndex}" value="${service.name}"></td>
-                          <td title="${service.description}">${service.name}</td>
-                          <td>${service.unit}</td>
-                          <td>${service.rates.join(' / ')}</td>`;
-          tbody.appendChild(tr);
-        });
-        table.appendChild(tbody);
-        block.appendChild(table);
-        // Блок для отображения предварительной стоимости выбранных услуг для данного товара
-        let costPreview = document.createElement('div');
-        costPreview.className = 'cost-preview';
-        costPreview.id = `costPreview_${pIndex}`;
-        costPreview.innerText = 'Предварительная стоимость: 0.00';
-        block.appendChild(costPreview);
         container.appendChild(block);
-        // Назначаем обработчики на каждый чекбокс для обновления стоимости при изменении
-        services.forEach((service, sIndex) => {
-          const checkbox = document.getElementById(`p${pIndex}_s${sIndex}`);
-          checkbox.addEventListener('change', function() {
-            updateCostPreview(pIndex);
-          });
-        });
+        updateServiceDropdown(pIndex);
       });
     }
-    // Функция обновления предварительной стоимости для товара
-    function updateCostPreview(pIndex) {
+    
+    // Обновление раскрывающегося списка для товара pIndex
+    function updateServiceDropdown(pIndex) {
       const products = getProducts();
       const product = products[pIndex];
-      let selected = [];
-      // Считываем выбранные услуги
-      services.forEach((srv, idx) => {
-        const cb = document.getElementById(`p${pIndex}_s${idx}`);
-        if (cb.checked) {
-          selected.push(cb.value);
-        }
+      const select = document.getElementById(`select_p${pIndex}`);
+      select.innerHTML = '<option value="">-- Выберите услугу --</option>';
+      services.forEach(service => {
+        if (product.selectedServices.includes(service.name)) return;
+        let option = document.createElement('option');
+        option.value = service.name;
+        option.textContent = service.name + ' (' + service.unit + ')';
+        select.appendChild(option);
       });
-      // Сохраняем временно выбранные услуги
-      product.selectedServicesTemp = selected;
-      const boxes = Math.ceil(product.pieces / product.piecesPerPackage);
-      const volume = (product.boxLength * product.boxWidth * product.boxHeight) / 1000000;
-      let cost = 0;
-      // Для каждой выбранной услуги рассчитываем стоимость по индивидуальным тарифам
-      selected.forEach(serviceName => {
-        const service = services.find(s => s.name === serviceName);
-        if (service) {
-          let multiplier = 0;
-          // Определяем множитель в зависимости от единицы измерения
-          if (service.unit === "Короб") multiplier = boxes;
-          else if (service.unit === "Штука") multiplier = product.pieces;
-          else if (service.unit === "Строка") multiplier = 1;
-          else if (service.unit === "Куб") multiplier = volume;
-          // Выбираем тариф в зависимости от величины, используемой для расчёта
-          let countForTariff;
-          if (service.unit === "Штука") countForTariff = product.pieces;
-          else if (service.unit === "Короб") countForTariff = boxes;
-          else if (service.unit === "Куб") countForTariff = volume;
-          else if (service.unit === "Строка") countForTariff = 1;
-          let tariffIndex = countForTariff <= 1500 ? 0 : (countForTariff <= 5000 ? 1 : 2);
-          cost += multiplier * service.rates[tariffIndex];
-        }
-      });
-      document.getElementById(`costPreview_${pIndex}`).innerText = `Предварительная стоимость: ${cost.toFixed(2)}`;
     }
-    // Обработчик отправки формы: сохраняем выбранные услуги для каждого товара и переходим к Шагу 3
+    
+    // Обновление списка выбранных услуг для товара pIndex с нумерацией и фиксированными колонками для кнопок
+    function updateSelectedServicesList(pIndex) {
+      const products = getProducts();
+      const product = products[pIndex];
+      const container = document.getElementById(`servicesList_p${pIndex}`);
+      container.innerHTML = '';
+      if (product.selectedServices.length === 0) {
+        container.textContent = 'Нет';
+      } else {
+        const ol = document.createElement('ol');
+        ol.style.fontSize = '0.8em';
+        ol.style.margin = '0 auto';
+        ol.style.padding = '0';
+        product.selectedServices.forEach((serviceName, idx) => {
+          const li = document.createElement('li');
+          li.style.marginBottom = '5px';
+          li.style.display = 'flex';
+          li.style.alignItems = 'center';
+          li.style.width = '100%';
+          
+          // Колонка с текстом услуги
+          const nameDiv = document.createElement('div');
+          nameDiv.className = 'name-col';
+          nameDiv.textContent = `${idx + 1}. ${serviceName}`;
+          li.appendChild(nameDiv);
+          
+          // Колонка с кнопкой удаления
+          const deleteDiv = document.createElement('div');
+          deleteDiv.className = 'btn-col';
+          deleteDiv.style.textAlign = 'center';
+          const removeBtn = document.createElement('button');
+          removeBtn.setAttribute('type', 'button');
+          removeBtn.textContent = '×';
+          removeBtn.className = 'remove-btn';
+          removeBtn.onclick = function() {
+            removeService(pIndex, serviceName);
+          };
+          deleteDiv.appendChild(removeBtn);
+          li.appendChild(deleteDiv);
+          
+          // Колонка с кнопкой подсказки
+          const helpDiv = document.createElement('div');
+          helpDiv.className = 'btn-col';
+          helpDiv.style.textAlign = 'center';
+          const helpBtn = document.createElement('button');
+          helpBtn.setAttribute('type', 'button');
+          helpBtn.textContent = '?';
+          helpBtn.className = 'help-btn';
+          helpBtn.style.position = 'relative';
+          const tooltip = document.createElement('span');
+          tooltip.className = 'tooltiptext';
+          tooltip.textContent = (services.find(s => s.name === serviceName) || {}).description || 'Добавить описание';
+          tooltip.style.display = 'none';
+          helpBtn.appendChild(tooltip);
+          helpBtn.onclick = function(e) {
+            tooltip.style.display = (tooltip.style.display === 'none') ? '-webkit-box' : 'none';
+            e.stopPropagation();
+          };
+          helpDiv.appendChild(helpBtn);
+          li.appendChild(helpDiv);
+          
+          ol.appendChild(li);
+        });
+        container.appendChild(ol);
+      }
+    }
+    
+    // Функция добавления выбранной услуги для товара pIndex
+    function addService(pIndex) {
+      const select = document.getElementById(`select_p${pIndex}`);
+      const serviceName = select.value;
+      if (!serviceName) return alert('Выберите услугу.');
+      let products = getProducts();
+      products[pIndex].selectedServices.push(serviceName);
+      saveProducts(products);
+      updateSelectedServicesList(pIndex);
+      updateServiceDropdown(pIndex);
+    }
+    
+    // Функция удаления услуги для товара pIndex
+    function removeService(pIndex, serviceName) {
+      let products = getProducts();
+      products[pIndex].selectedServices = products[pIndex].selectedServices.filter(s => s !== serviceName);
+      saveProducts(products);
+      updateSelectedServicesList(pIndex);
+      updateServiceDropdown(pIndex);
+    }
+    
     document.getElementById('servicesForm').addEventListener('submit', function(e) {
       e.preventDefault();
-      const products = getProducts();
-      products.forEach((product, pIndex) => {
-        let selected = [];
-        services.forEach((srv, idx) => {
-          const cb = document.getElementById(`p${pIndex}_s${idx}`);
-          if (cb && cb.checked) {
-            selected.push(cb.value);
-          }
-        });
-        product.selectedServices = selected;
-      });
-      saveProducts(products);
       window.location.href = 'results.html';
     });
-    // При загрузке страницы создаем блоки выбора услуг
+    
     document.addEventListener('DOMContentLoaded', createServiceBlocks);
+    
+    // Глобальный обработчик кликов – скрывает все тултипы, если клик вне help-btn
+    document.addEventListener('click', function() {
+      const tooltips = document.querySelectorAll('.tooltiptext');
+      tooltips.forEach(tooltip => {
+        tooltip.style.display = 'none';
+      });
+    });
   </script>
-
-  <!-- Футер (нижний колонтитул) -->
   <footer>
     <span class="footer-text">Gabit43<span class="footer-symbol">ⓒ</span></span>
   </footer>
