@@ -1,20 +1,24 @@
-/* Основные настройки страницы */
+/* styles.css */
 html, body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  font-family: Arial, sans-serif; /* Измените шрифт при необходимости */
+  font-family: Arial, sans-serif;
 }
 
 body {
   position: relative;
-  color: #fff;           /* Основной цвет текста */
-  background: #222;      /* Фоновый цвет страницы */
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
   padding: 20px;
+  background: #222;
 }
 
-/* Фоны для различных страниц */
-/* Измените URL изображений или параметры background-size по необходимости */
+/* Класс для маленьких полей – ширина задается через width, единица ch соответствует ширине символа "0" */
+.small-input {
+  width: 10ch;
+}
+
 .index-bg {
   background: url('images/index-bg.jpg') no-repeat center center fixed;
   background-size: cover;
@@ -28,7 +32,6 @@ body {
   background-size: cover;
 }
 
-/* Затемнение фона для лучшей читаемости */
 body::before {
   content: "";
   position: fixed;
@@ -36,8 +39,24 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.4); /* Измените прозрачность при необходимости */
+  background: rgba(0,0,0,0.4);
   z-index: -1;
+  pointer-events: none;
+}
+
+.content {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: rgba(0,0,0,0.6);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+/* Переопределение стилей для заголовков таблицы на странице результатов */
+.results-bg table thead th {
+  background-color: transparent;
+  color: inherit;
+  border: 1px solid rgba(255,255,255,0.3);
 }
 
 /* Заголовок и индикатор прогресса */
@@ -51,25 +70,23 @@ header {
   gap: 10px;
   margin-top: 10px;
 }
-/* Каждый шаг индикатора */
 .progress-bar .step {
-  width: 30px;         /* Размер шага */
-  height: 30px;        /* Размер шага */
-  background: rgba(255,255,255,0.3); /* Фоновый цвет шага */
-  border-radius: 50%;  /* Округлые углы */
-  line-height: 30px;   /* Выравнивание текста по вертикали */
-  text-align: center;  /* Выравнивание текста по горизонтали */
+  width: 30px;
+  height: 30px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  line-height: 30px;
+  text-align: center;
 }
-/* Активный шаг */
 .progress-bar .step.active {
-  background: #4CAF50; /* Зеленый цвет для активного шага; можно изменить */
+  background: #4CAF50;
 }
 
 /* Основной контейнер контента */
 .content {
   max-width: 1000px;
   margin: 0 auto;
-  background: rgba(0,0,0,0.6); /* Фон контейнера (прозрачность можно изменить) */
+  background: rgba(0,0,0,0.6);
   padding: 20px;
   border-radius: 8px;
 }
@@ -99,9 +116,6 @@ input[type="file"] {
   box-sizing: border-box;
   width: 100%;
 }
-.small-input {
-  width: 10ch; /* Измените ширину для маленьких полей при необходимости */
-}
 .form-buttons {
   margin-top: 10px;
 }
@@ -109,13 +123,13 @@ button {
   padding: 10px 20px;
   margin-right: 10px;
   border: none;
-  background: #4CAF50; /* Цвет кнопок (можно изменить) */
+  background: #4CAF50;
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
 }
 button:hover {
-  background: #45a049; /* Цвет кнопок при наведении */
+  background: #45a049;
 }
 
 /* Стили для списка товаров */
@@ -133,16 +147,38 @@ button:hover {
   margin-bottom: 10px;
 }
 
-/* Стили блоков выбора услуг и таблиц */
+/* Стили для блоков выбора услуг */
 .product-services {
   background: rgba(0,0,0,0.7);
   padding: 15px;
   border-radius: 5px;
   margin-bottom: 20px;
+  max-width: 600px;
 }
 .product-info h3 {
   margin: 0 0 10px;
 }
+.service-selection {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+.service-selection select {
+  flex: 1;
+  padding: 5px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.selected-services {
+  margin-top: 10px;
+  padding: 5px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+
+/* Стили для таблиц */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -154,13 +190,13 @@ table th, table td {
   text-align: left;
 }
 table th {
-  background-color: rgba(255,255,255,0.2); /* Измените прозрачность или цвет, если нужно */
+  background-color: rgba(255,255,255,0.2);
 }
 .cost-preview {
   margin-top: 10px;
 }
 
-/* Стили для блоков результатов расчёта */
+/* Стили для блоков результатов */
 .product-block {
   background: rgba(0,0,0,0.7);
   padding: 15px;
@@ -170,6 +206,7 @@ table th {
 .product-summary {
   margin-bottom: 15px;
   font-size: 1.1em;
+  text-align: center;
 }
 .calc-table th, .calc-table td {
   border: 1px solid #fff;
@@ -187,22 +224,20 @@ table th {
   font-size: 1.2em;
   margin-top: 20px;
 }
-/* Стили для контейнера с кнопками на странице результатов */
 .buttons {
   margin-top: 20px;
   text-align: center;
 }
 
-/* Стили нижнего колонтитула (footer) */
-/* Измените параметры цвета, размера шрифта, теней и расположения при необходимости */
+/* Стили для футера */
 footer {
   position: fixed;
-  bottom: 10px;  /* Отступ от нижней части страницы */
-  right: 10px;   /* Отступ от правой стороны */
-  text-transform: uppercase; /* Приведение текста к верхнему регистру */
-  font-size: 0.9em;  /* Размер шрифта */
-  color: #ff69b4;    /* Розовый цвет текста; измените при необходимости */
-  text-shadow: 0 0 5px #ff69b4, 0 0 10px #ff69b4, 0 0 15px #ff69b4; /* Неоновые тени */
+  bottom: 10px;
+  right: 10px;
+  text-transform: uppercase;
+  font-size: 0.9em;
+  color: #ff69b4;
+  text-shadow: 0 0 5px #ff69b4, 0 0 10px #ff69b4, 0 0 15px #ff69b4;
   z-index: 1000;
 }
 .footer-text {
@@ -210,10 +245,10 @@ footer {
 }
 .footer-symbol {
   position: relative;
-  top: -5px; /* Положение символа ⓒ относительно текста */
+  top: -5px;
 }
 
-/* Адаптивные стили для экранов с узкой шириной */
+/* Адаптивные стили */
 @media (max-width: 600px) {
   .form-row, .form-row-small {
     flex-direction: column;
