@@ -5,16 +5,71 @@
   <title>Калькулятор услуг склада - Шаг 1: Ввод данных товара</title>
   <!-- Подключение основного файла стилей -->
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Стили для кнопки справки и модального окна в шапке */
+    .help-container {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 200;
+    }
+    .help-button {
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 210;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 4px;
+    }
+    .close-button {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close-button:hover,
+    .close-button:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body class="index-bg">
   <!-- Header: заголовок страницы и индикатор прогресса -->
-  <header>
+  <header style="position: relative;">
     <h1>Калькулятор услуг склада</h1>
     <div class="progress-bar">
       <!-- Активный шаг помечается классом "active" -->
       <div class="step active">1</div>
       <div class="step">2</div>
       <div class="step">3</div>
+    </div>
+    <!-- Контейнер для кнопки справки -->
+    <div class="help-container">
+      <button id="helpButton" class="help-button">?</button>
     </div>
   </header>
 
@@ -90,7 +145,15 @@
     </div>
   </div>
 
-  <!-- Скриптовый блок: обработка данных, сохранение в sessionStorage, редактирование и удаление товара -->
+  <!-- Модальное окно справки -->
+  <div id="helpModal" class="modal">
+    <div class="modal-content">
+      <span id="closeModal" class="close-button">&times;</span>
+      <div id="helpContent"></div>
+    </div>
+  </div>
+
+  <!-- Скриптовый блок: обработка данных, сохранение в sessionStorage, редактирование и удаление товара, а также модальное окно справки -->
   <script>
     // Получение товаров из sessionStorage
     function getProducts() {
@@ -106,7 +169,6 @@
       const ul = document.getElementById('productsUl');
       ul.innerHTML = '';
       products.forEach((p, index) => {
-        // Добавляем "шт." для количества и упаковки
         const li = document.createElement('li');
         li.innerHTML = `<strong>${index + 1}. ${p.productName}</strong>${p.productDescription ? ' / ' + p.productDescription : ''}<br>
                         Количество: ${p.pieces} шт., Упаковка: ${p.piecesPerPackage} шт.<br>
@@ -129,7 +191,6 @@
       const fileInput = document.getElementById('productImage');
       const editIndex = parseInt(document.getElementById('editIndex').value);
       
-      // Функция сохранения товара и сброса формы
       function saveAndReset(imageData) {
         const newProduct = {
           productName,
@@ -146,11 +207,9 @@
         };
         let products = getProducts();
         if (editIndex >= 0) {
-          // Редактирование товара
           products[editIndex] = newProduct;
           document.getElementById('editIndex').value = -1;
         } else {
-          // Добавление нового товара
           products.push(newProduct);
         }
         saveProducts(products);
@@ -223,7 +282,45 @@
     });
     // При загрузке страницы обновляем список товаров
     document.addEventListener('DOMContentLoaded', updateProductsList);
+
+    // Модальное окно справки
+    const helpButton = document.getElementById('helpButton');
+    const helpModal = document.getElementById('helpModal');
+    const closeModal = document.getElementById('closeModal');
+    const helpContent = document.getElementById('helpContent');
+
+    helpButton.addEventListener('click', function(e) {
+      fetch('help.html')
+        .then(response => response.text())
+        .then(data => {
+          helpContent.innerHTML = data;
+          helpModal.style.display = 'block';
+        })
+        .catch(error => {
+          helpContent.innerHTML = '<p>Не удалось загрузить справку.</p>';
+          helpModal.style.display = 'block';
+        });
+      e.stopPropagation();
+    });
+
+    closeModal.addEventListener('click', function() {
+      helpModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+      if (event.target == helpModal) {
+        helpModal.style.display = 'none';
+      }
+    });
   </script>
+
+  <!-- Модальное окно справки -->
+  <div id="helpModal" class="modal">
+    <div class="modal-content">
+      <span id="closeModal" class="close-button">&times;</span>
+      <div id="helpContent"></div>
+    </div>
+  </div>
 
   <!-- Нижний колонтитул (footer); см. стили в файле CSS -->
   <footer>
